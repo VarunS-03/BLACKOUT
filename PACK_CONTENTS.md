@@ -1,18 +1,291 @@
-# Pack contents — Member 4
+# BLACKOUT — Pack Contents
 
-Assigned area: Member 4 — Integrity and Audit
+## 1. Project Overview
 
-Files owned by this member:
-- `MerkleTree`
-- `LRUCache`
-- `Trie`
-- `AuditLogger`
+**BLACKOUT** is a Java-based Data Center Failure and Recovery Simulator developed as a collaborative Data Structures and Algorithms (DSA) case study.
 
-This archive also includes identical shared model classes, Maven metadata, and a small demo
-entry point so the pack can be opened and demonstrated independently.
+The project demonstrates how data structures can be applied to infrastructure simulation, dependency analysis, recovery task prioritization, operational data management, and record-integrity verification.
 
-## Team integration
-Copy only the assigned member's structure/service files into the shared repository.
-Do not overwrite another member's `blackout.cli.Main`; each pack has its own demo `Main`.
-Keep the shared `blackout.model` files only once in the final repository. They are identical
-across all four packs. For the final integrated app, create one `Main` that calls all services.
+This document describes the project organization, the responsibilities assigned to each team member, and the purpose of the major source-code components.
+
+---
+
+## 2. Team Members and Responsibilities
+
+### Member 1 — Core Data Structures
+
+**GitHub Username:** `karunyabommu`
+
+**Assigned Components:**
+
+* Linked List
+* Queue
+* Stack
+* Hash Table
+
+**Responsibilities:**
+
+* Implement foundational data structures.
+* Support sequential data storage and traversal.
+* Provide FIFO and LIFO processing where required.
+* Support key-based data lookup.
+* Contribute to the organization and management of simulator data.
+
+### Member 2 — Dependency and Connectivity Structures
+
+**GitHub Username:** `akshayakula001-ops`
+
+**Assigned Components:**
+
+* Graph
+* Binary Tree
+* Binary Search Tree (BST)
+* Disjoint Set Union (DSU)
+
+**Responsibilities:**
+
+* Represent relationships and dependencies between components.
+* Implement hierarchical and ordered data structures.
+* Support searching and traversal operations.
+* Manage connectivity queries using DSU.
+* Contribute to dependency representation and failure analysis.
+
+### Member 3 — Scheduling and Operational Data Structures
+
+**GitHub Username:** `Vinay2744`
+
+**Assigned Components:**
+
+* Heap
+* Priority Queue
+* Circular Queue
+* Deque
+* Segment Tree
+
+**Responsibilities:**
+
+* Implement priority-based data processing.
+* Support efficient insertion and removal operations.
+* Manage bounded sequential storage where appropriate.
+* Implement double-ended operations.
+* Support range queries and updates where required.
+* Contribute to recovery scheduling and operational data management.
+
+### Member 4 — Integrity, Caching, Searching, and Integration
+
+**GitHub Username:** `VarunS-03`
+
+**Assigned Components:**
+
+* Merkle Tree
+* LRU Cache
+* Trie
+* Audit Logger
+* System Integration
+
+**Responsibilities:**
+
+* Implement the Merkle Tree for record-integrity verification.
+* Implement the LRU Cache for recently accessed data.
+* Implement the Trie for prefix-based searching.
+* Develop or integrate audit-logging functionality.
+* Coordinate integration of shared models and individual modules.
+* Help maintain compatibility across the overall Java application.
+
+---
+
+## 3. Project Directory Structure
+
+The project follows a Maven-style Java directory structure.
+
+```text
+BLACKOUT/
+├── pom.xml
+├── README.md
+├── PACK_CONTENTS.md
+├── docs/
+│   └── MEMBER4_GUIDE.md
+└── src/
+    └── main/
+        └── java/
+            └── blackout/
+                ├── model/
+                ├── structures/
+                ├── service/
+                └── cli/
+                    └── Main.java
+```
+
+### Directory Descriptions
+
+| Path               | Purpose                                                                               |
+| ------------------ | ------------------------------------------------------------------------------------- |
+| `pom.xml`          | Defines Maven project configuration, dependencies, and build settings.                |
+| `README.md`        | Introduces the project, explains its functionality, and documents team contributions. |
+| `PACK_CONTENTS.md` | Documents the repository structure and assigned responsibilities.                     |
+| `docs/`            | Contains supplementary documentation and implementation guides.                       |
+| `model/`           | Contains shared models used to represent entities and records within the simulator.   |
+| `structures/`      | Contains implementations of the project's data structures.                            |
+| `service/`         | Contains application-level logic that coordinates relevant operations.                |
+| `cli/`             | Contains the command-line interface and application entry point.                      |
+| `Main.java`        | Provides the application's entry point.                                               |
+
+**Note:** The directory tree describes the intended project organization. Individual source files should be listed below only after confirming that they exist in the repository.
+
+---
+
+## 4. Shared Components
+
+Shared components provide common functionality used by multiple parts of the application.
+
+### Model Package
+
+The `blackout.model` package contains shared data models.
+
+Depending on the current implementation, these may include:
+
+* `AuditRecord` — Represents an audit record.
+* `Job` — Represents a job or unit of work.
+* `RecoveryTask` — Represents a recovery operation.
+* `Server` — Represents a server in the simulated environment.
+* `TelemetryEvent` — Represents an operational telemetry event.
+
+These models allow different modules to exchange structured information without duplicating entity definitions.
+
+### Service Package
+
+The `blackout.service` package contains application-level logic.
+
+Services coordinate data structures and models to implement relevant simulator operations, such as dependency analysis, recovery processing, or audit logging.
+
+The exact service classes and their responsibilities should correspond to the source files present in the repository.
+
+### Command-Line Interface
+
+The `blackout.cli` package contains the application entry point and command-line interaction.
+
+`Main.java` is responsible for starting the application and connecting the supported user interaction flow to the relevant application components.
+
+---
+
+## 5. Data Structures by Team Member
+
+| Member   | Data Structure or Component | Primary Purpose                                            |
+| -------- | --------------------------- | ---------------------------------------------------------- |
+| Member 1 | Linked List                 | Dynamic sequential storage and traversal.                  |
+| Member 1 | Queue                       | FIFO processing.                                           |
+| Member 1 | Stack                       | LIFO processing.                                           |
+| Member 1 | Hash Table                  | Key-based data retrieval.                                  |
+| Member 2 | Graph                       | Representing relationships and dependencies.               |
+| Member 2 | Binary Tree                 | Hierarchical data organization.                            |
+| Member 2 | Binary Search Tree          | Ordered storage and searching.                             |
+| Member 2 | Disjoint Set Union          | Connectivity and set-membership queries.                   |
+| Member 3 | Heap                        | Maintaining partial ordering for efficient element access. |
+| Member 3 | Priority Queue              | Processing elements according to priority.                 |
+| Member 3 | Circular Queue              | Bounded FIFO storage with reusable positions.              |
+| Member 3 | Deque                       | Insertion and removal at both ends.                        |
+| Member 3 | Segment Tree                | Efficient range queries and updates.                       |
+| Member 4 | Merkle Tree                 | Hash-based record-integrity verification.                  |
+| Member 4 | LRU Cache                   | Caching recently accessed entries.                         |
+| Member 4 | Trie                        | Prefix-based string searching.                             |
+| Member 4 | Audit Logger                | Recording relevant application events.                     |
+| Member 4 | System Integration          | Coordinating shared components and application modules.    |
+
+---
+
+## 6. Application Workflow
+
+The intended simulator workflow is organized around the following stages:
+
+1. **Initialization:** Load or initialize the models and components required by the application.
+2. **Failure Handling:** Represent a server or component failure through the supported simulation operations.
+3. **Dependency Analysis:** Examine relevant relationships between components when dependency analysis is implemented.
+4. **Recovery Processing:** Organize and process recovery tasks using the scheduling mechanisms provided by the application.
+5. **Operational Data Management:** Store, retrieve, and process relevant records and telemetry.
+6. **Audit and Integrity Verification:** Record relevant events and use the Merkle Tree to verify the integrity of supported records.
+7. **Output:** Present the results through the available command-line interface.
+
+The actual execution sequence depends on the functionality implemented in the current version of the application.
+
+---
+
+## 7. Build and Execution
+
+The project uses Maven for Java project management and compilation.
+
+### Prerequisites
+
+* A compatible Java Development Kit (JDK).
+* Apache Maven.
+* Access to the BLACKOUT project source code.
+
+### Compile the Project
+
+From the project root directory, run:
+
+```bash
+mvn -q -DskipTests compile
+```
+
+This command compiles the project while skipping test execution.
+
+### Run the Application
+
+The application entry point is documented as:
+
+```text
+blackout.cli.Main
+```
+
+If the Maven configuration supports the required execution setup, the application can be launched through that configuration. Otherwise, use the project's configured Java execution method or IDE run configuration.
+
+---
+
+## 8. Version Control and Collaboration
+
+The project is maintained using Git and GitHub.
+
+Each team member is responsible for their assigned components and should contribute through the agreed branch and pull-request workflow.
+
+The collaborative workflow consists of:
+
+1. Working on the assigned components.
+2. Committing changes to the appropriate feature branch.
+3. Pushing the branch to the remote repository.
+4. Opening a pull request for review.
+5. Checking compatibility with the shared models and existing modules.
+6. Merging approved changes into the main branch.
+
+Shared files should be modified carefully to avoid conflicting implementations or breaking compatibility between team members' modules.
+
+---
+
+## 9. Implementation and Documentation Guidelines
+
+* Keep data-structure implementations organized within the appropriate package.
+* Reuse shared models instead of introducing duplicate definitions.
+* Maintain compatibility with the project's Maven configuration.
+* Document public methods and important algorithmic decisions where appropriate.
+* Test relevant operations and edge cases.
+* Update this document when source files, responsibilities, or directory organization change.
+* Describe functionality according to the actual implementation rather than planned features.
+
+---
+
+## 10. Academic Purpose
+
+BLACKOUT demonstrates the application of Data Structures and Algorithms to a simulated infrastructure reliability problem.
+
+The project emphasizes:
+
+* Data organization and retrieval.
+* Tree traversal and ordered searching.
+* Graph-based relationship representation.
+* Priority-based processing.
+* Queue and deque operations.
+* Range-based data processing.
+* Caching and prefix searching.
+* Hash-based record-integrity verification.
+* Collaborative software development and version control.
+
+The individual contributions document each member's assigned responsibilities, while the shared project structure supports integration into a single Java application.
