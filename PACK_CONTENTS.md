@@ -104,16 +104,24 @@ BLACKOUT/
 ├── README.md
 ├── PACK_CONTENTS.md
 ├── docs/
+│   ├── DSA_EXPLANATION.md
+│   ├── MEMBER1_GUIDE.md
+│   ├── MEMBER2_GUIDE.md
+│   ├── MEMBER3_GUIDE.md
 │   └── MEMBER4_GUIDE.md
 └── src/
-    └── main/
+    ├── main/
+    │   └── java/
+    │       └── blackout/
+    │           ├── model/
+    │           ├── structures/
+    │           ├── service/
+    │           └── cli/
+    │               └── Main.java
+    └── test/
         └── java/
             └── blackout/
-                ├── model/
-                ├── structures/
-                ├── service/
-                └── cli/
-                    └── Main.java
+                └── BlackoutWorkflowTest.java
 ```
 
 ### Directory Descriptions
@@ -121,7 +129,7 @@ BLACKOUT/
 | Path               | Purpose                                                                               |
 | ------------------ | ------------------------------------------------------------------------------------- |
 | `pom.xml`          | Defines Maven project configuration, dependencies, and build settings.                |
-| `README.md`        | Introduces the project, explains its functionality, and documents team contributions. |
+| `README.md`        | Provides a quick project introduction and run instructions.                           |
 | `PACK_CONTENTS.md` | Documents the repository structure and assigned responsibilities.                     |
 | `docs/`            | Contains supplementary documentation and implementation guides.                       |
 | `model/`           | Contains shared models used to represent entities and records within the simulator.   |
@@ -195,17 +203,7 @@ The `blackout.cli` package contains the application entry point and command-line
 
 ## 6. Application Workflow
 
-The intended simulator workflow is organized around the following stages:
-
-1. **Initialization:** Load or initialize the models and components required by the application.
-2. **Failure Handling:** Represent a server or component failure through the supported simulation operations.
-3. **Dependency Analysis:** Examine relevant relationships between components when dependency analysis is implemented.
-4. **Recovery Processing:** Organize and process recovery tasks using the scheduling mechanisms provided by the application.
-5. **Operational Data Management:** Store, retrieve, and process relevant records and telemetry.
-6. **Audit and Integrity Verification:** Record relevant events and use the Merkle Tree to verify the integrity of supported records.
-7. **Output:** Present the results through the available command-line interface.
-
-The actual execution sequence depends on the functionality implemented in the current version of the application.
+The user registers servers and their network links, reports an outage, dispatches the incident into the recovery priority queue, and processes a recovery task. Separate menu choices demonstrate routine jobs, configuration undo, telemetry and load analysis, failover planning, and audit verification.
 
 ---
 
@@ -224,20 +222,21 @@ The project uses Maven for Java project management and compilation.
 From the project root directory, run:
 
 ```bash
-mvn -q -DskipTests compile
+mvn test
 ```
 
-This command compiles the project while skipping test execution.
+This compiles the project and runs the JUnit tests.
 
 ### Run the Application
 
-The application entry point is documented as:
+Build and run the terminal application with:
 
-```text
-blackout.cli.Main
+```bash
+mvn -q -DskipTests package
+java -cp target/classes blackout.cli.Main
 ```
 
-If the Maven configuration supports the required execution setup, the application can be launched through that configuration. Otherwise, use the project's configured Java execution method or IDE run configuration.
+Use the numbered menu to interact with the data-center scenario. Enter `0` in a submenu to return to the main menu, or at the main menu to exit. See `docs/DSA_EXPLANATION.md` for the implementation guide and demonstration sequence.
 
 ---
 

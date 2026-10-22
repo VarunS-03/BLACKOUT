@@ -1,13 +1,89 @@
 package blackout.structures;
+
 import java.util.Objects;
-public class CustomHashTable<K,V> {
-    private static final class Entry<K,V>{K k;V v;Entry<K,V> next;Entry(K k,V v){this.k=k;this.v=v;}}
-    private Entry<K,V>[] buckets; private int size;
-    @SuppressWarnings("unchecked") public CustomHashTable(){buckets=(Entry<K,V>[])new Entry[16];}
-    private int index(Object k){return (k.hashCode()&0x7fffffff)%buckets.length;}
-    public void put(K k,V v){Objects.requireNonNull(k);int i=index(k);for(Entry<K,V>e=buckets[i];e!=null;e=e.next)if(e.k.equals(k)){e.v=v;return;}Entry<K,V>n=new Entry<>(k,v);n.next=buckets[i];buckets[i]=n;size++;if(size>buckets.length*2)resize();}
-    public V get(K k){if(k==null)return null;for(Entry<K,V>e=buckets[index(k)];e!=null;e=e.next)if(e.k.equals(k))return e.v;return null;}
-    public boolean containsKey(K k){if(k==null)return false;for(Entry<K,V>e=buckets[index(k)];e!=null;e=e.next)if(e.k.equals(k))return true;return false;}
-    @SuppressWarnings("unchecked") private void resize(){Entry<K,V>[] old=buckets;buckets=(Entry<K,V>[])new Entry[old.length*2];size=0;for(Entry<K,V>e:old)for(;e!=null;e=e.next)put(e.k,e.v);}
-    public int size(){return size;}
+
+public class CustomHashTable<K, V> {
+    private static final class Entry<K, V> {
+        private final K key;
+        private V value;
+        private Entry<K, V> next;
+
+        private Entry(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
+    private Entry<K, V>[] buckets;
+    private int size;
+
+    @SuppressWarnings("unchecked")
+    public CustomHashTable() {
+        buckets = (Entry<K, V>[]) new Entry[16];
+    }
+
+    public void put(K key, V value) {
+        Objects.requireNonNull(key, "key cannot be null");
+        int bucketIndex = indexFor(key);
+
+        for (Entry<K, V> entry = buckets[bucketIndex]; entry != null; entry = entry.next) {
+            if (entry.key.equals(key)) {
+                entry.value = value;
+                return;
+            }
+        }
+
+        Entry<K, V> newEntry = new Entry<>(key, value);
+        newEntry.next = buckets[bucketIndex];
+        buckets[bucketIndex] = newEntry;
+        size++;
+        if (size > buckets.length * 2) {
+            resize();
+        }
+    }
+
+    public V get(K key) {
+        if (key == null) {
+            return null;
+        }
+        for (Entry<K, V> entry = buckets[indexFor(key)]; entry != null; entry = entry.next) {
+            if (entry.key.equals(key)) {
+                return entry.value;
+            }
+        }
+        return null;
+    }
+
+    public boolean containsKey(K key) {
+        if (key == null) {
+            return false;
+        }
+        for (Entry<K, V> entry = buckets[indexFor(key)]; entry != null; entry = entry.next) {
+            if (entry.key.equals(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int size() {
+        return size;
+    }
+
+    private int indexFor(Object key) {
+        return (key.hashCode() & 0x7fffffff) % buckets.length;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void resize() {
+        Entry<K, V>[] oldBuckets = buckets;
+        buckets = (Entry<K, V>[]) new Entry[oldBuckets.length * 2];
+        size = 0;
+
+        for (Entry<K, V> bucket : oldBuckets) {
+            for (Entry<K, V> entry = bucket; entry != null; entry = entry.next) {
+                put(entry.key, entry.value);
+            }
+        }
+    }
 }

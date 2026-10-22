@@ -3,33 +3,39 @@ package blackout.structures;
 import java.util.NoSuchElementException;
 
 public class CircularQueue<T> {
-    private final Object[] data;
-    private int head = 0, tail = 0, size = 0;
+    private final Object[] values;
+    private int head;
+    private int tail;
+    private int size;
 
     public CircularQueue(int capacity) {
-        if (capacity <= 0)
+        if (capacity <= 0) {
             throw new IllegalArgumentException("capacity must be positive");
-        data = new Object[capacity];
+        }
+        values = new Object[capacity];
     }
 
-    public boolean offer(T v) {
-        if (size == data.length)
+    public boolean offer(T value) {
+        if (size == values.length) {
             return false;
-        data[tail] = v;
-        tail = (tail + 1) % data.length;
+        }
+        values[tail] = value;
+        tail = (tail + 1) % values.length;
         size++;
         return true;
     }
 
     @SuppressWarnings("unchecked")
     public T poll() {
-        if (size == 0)
-            throw new NoSuchElementException("Queue empty");
-        T v = (T) data[head];
-        data[head] = null;
-        head = (head + 1) % data.length;
+        if (size == 0) {
+            throw new NoSuchElementException("Queue is empty");
+        }
+
+        T value = (T) values[head];
+        values[head] = null;
+        head = (head + 1) % values.length;
         size--;
-        return v;
+        return value;
     }
 
     public int size() {
@@ -37,7 +43,7 @@ public class CircularQueue<T> {
     }
 
     public int capacity() {
-        return data.length;
+        return values.length;
     }
 
     public boolean isEmpty() {

@@ -1,15 +1,84 @@
 package blackout.structures;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+
 public class CustomLinkedList<T> implements Iterable<T> {
-    private static final class Node<T> { T value; Node<T> next; Node(T v){value=v;} }
-    private Node<T> head, tail; private int size;
-    public void add(T value) { Node<T> n=new Node<>(value); if(tail==null) head=n; else tail.next=n; tail=n; size++; }
+    private static final class Node<T> {
+        private final T value;
+        private Node<T> next;
+
+        private Node(T value) {
+            this.value = value;
+        }
+    }
+
+    private Node<T> head;
+    private Node<T> tail;
+    private int size;
+
+    public void add(T value) {
+        Node<T> newNode = new Node<>(value);
+        if (tail == null) {
+            head = newNode;
+        } else {
+            tail.next = newNode;
+        }
+        tail = newNode;
+        size++;
+    }
+
     public boolean removeFirstMatch(T value) {
-        Node<T> prev=null, cur=head;
-        while(cur!=null) { if(java.util.Objects.equals(cur.value,value)) { if(prev==null) head=cur.next; else prev.next=cur.next; if(cur==tail) tail=prev; size--; return true; } prev=cur; cur=cur.next; }
+        Node<T> previous = null;
+        Node<T> current = head;
+
+        while (current != null) {
+            if (Objects.equals(current.value, value)) {
+                if (previous == null) {
+                    head = current.next;
+                } else {
+                    previous.next = current.next;
+                }
+                if (current == tail) {
+                    tail = previous;
+                }
+                size--;
+                return true;
+            }
+            previous = current;
+            current = current.next;
+        }
         return false;
     }
-    public int size(){return size;} public boolean isEmpty(){return size==0;}
-    @Override public Iterator<T> iterator(){ return new Iterator<>() { Node<T> n=head; @Override public boolean hasNext(){return n!=null;} @Override public T next(){if(n==null)throw new NoSuchElementException(); T v=n.value;n=n.next;return v;} }; }
+
+    public int size() {
+        return size;
+    }
+
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new Iterator<>() {
+            private Node<T> current = head;
+
+            @Override
+            public boolean hasNext() {
+                return current != null;
+            }
+
+            @Override
+            public T next() {
+                if (current == null) {
+                    throw new NoSuchElementException();
+                }
+                T value = current.value;
+                current = current.next;
+                return value;
+            }
+        };
+    }
 }

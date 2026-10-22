@@ -1,72 +1,89 @@
 package blackout.structures;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public class BinaryHeap<T> {
-    private final ArrayList<T> a = new ArrayList<>();
-    private final Comparator<? super T> cmp;
+    private final ArrayList<T> values = new ArrayList<>();
+    private final Comparator<? super T> comparator;
 
-    public BinaryHeap(Comparator<? super T> cmp) {
-        this.cmp = Objects.requireNonNull(cmp);
+    public BinaryHeap(Comparator<? super T> comparator) {
+        this.comparator = Objects.requireNonNull(comparator);
     }
 
-    public void add(T v) {
-        a.add(v);
-        up(a.size() - 1);
+    public void add(T value) {
+        values.add(value);
+        moveUp(values.size() - 1);
     }
 
     public T peek() {
-        if (a.isEmpty())
-            throw new NoSuchElementException("Heap empty");
-        return a.get(0);
+        if (values.isEmpty()) {
+            throw new NoSuchElementException("Heap is empty");
+        }
+        return values.get(0);
     }
 
     public T remove() {
-        if (a.isEmpty())
-            throw new NoSuchElementException("Heap empty");
-        T out = a.get(0), last = a.remove(a.size() - 1);
-        if (!a.isEmpty()) {
-            a.set(0, last);
-            down(0);
+        if (values.isEmpty()) {
+            throw new NoSuchElementException("Heap is empty");
         }
-        return out;
+
+        T firstValue = values.get(0);
+        T lastValue = values.remove(values.size() - 1);
+        if (!values.isEmpty()) {
+            values.set(0, lastValue);
+            moveDown(0);
+        }
+        return firstValue;
     }
 
     public int size() {
-        return a.size();
+        return values.size();
     }
 
     public boolean isEmpty() {
-        return a.isEmpty();
+        return values.isEmpty();
     }
 
-    private void up(int i) {
-        while (i > 0) {
-            int p = (i - 1) / 2;
-            if (cmp.compare(a.get(i), a.get(p)) >= 0)
-                break;
-            swap(i, p);
-            i = p;
-        }
-    }
-
-    private void down(int i) {
-        while (true) {
-            int l = 2 * i + 1, r = l + 1, s = i;
-            if (l < a.size() && cmp.compare(a.get(l), a.get(s)) < 0)
-                s = l;
-            if (r < a.size() && cmp.compare(a.get(r), a.get(s)) < 0)
-                s = r;
-            if (s == i)
+    private void moveUp(int index) {
+        while (index > 0) {
+            int parentIndex = (index - 1) / 2;
+            if (comparator.compare(values.get(index), values.get(parentIndex)) >= 0) {
                 return;
-            swap(i, s);
-            i = s;
+            }
+            swap(index, parentIndex);
+            index = parentIndex;
         }
     }
 
-    private void swap(int i, int j) {
-        T t = a.get(i);
-        a.set(i, a.get(j));
-        a.set(j, t);
+    private void moveDown(int index) {
+        while (true) {
+            int leftIndex = 2 * index + 1;
+            int rightIndex = leftIndex + 1;
+            int firstIndex = index;
+
+            if (leftIndex < values.size()
+                    && comparator.compare(values.get(leftIndex), values.get(firstIndex)) < 0) {
+                firstIndex = leftIndex;
+            }
+            if (rightIndex < values.size()
+                    && comparator.compare(values.get(rightIndex), values.get(firstIndex)) < 0) {
+                firstIndex = rightIndex;
+            }
+            if (firstIndex == index) {
+                return;
+            }
+
+            swap(index, firstIndex);
+            index = firstIndex;
+        }
+    }
+
+    private void swap(int firstIndex, int secondIndex) {
+        T firstValue = values.get(firstIndex);
+        values.set(firstIndex, values.get(secondIndex));
+        values.set(secondIndex, firstValue);
     }
 }

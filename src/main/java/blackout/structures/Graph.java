@@ -1,14 +1,97 @@
 package blackout.structures;
-import java.util.*;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 public class Graph {
- private final Map<Integer,Set<Integer>> adj=new LinkedHashMap<>();
- public void addVertex(int v){adj.computeIfAbsent(v,k->new LinkedHashSet<>());}
- public void addEdge(int a,int b){addVertex(a);addVertex(b);adj.get(a).add(b);adj.get(b).add(a);}
- public Set<Integer> neighbors(int v){return Collections.unmodifiableSet(adj.getOrDefault(v,Set.of()));}
- public List<Integer> bfs(int start){if(!adj.containsKey(start))return List.of();List<Integer> out=new ArrayList<>();Set<Integer> seen=new HashSet<>();ArrayDeque<Integer> q=new ArrayDeque<>();q.add(start);seen.add(start);while(!q.isEmpty()){int v=q.remove();out.add(v);for(int n:adj.get(v))if(seen.add(n))q.add(n);}return out;}
- public List<Integer> dfs(int start){List<Integer> out=new ArrayList<>();Set<Integer> seen=new HashSet<>();dfsVisit(start,seen,out);return out;}
- private void dfsVisit(int v,Set<Integer>s,List<Integer>o){if(!adj.containsKey(v)||!s.add(v))return;o.add(v);for(int n:adj.get(v))dfsVisit(n,s,o);}
- public Set<Integer> reachable(int start){return new LinkedHashSet<>(bfs(start));}
- public boolean removeEdge(int a,int b){if(!adj.containsKey(a)||!adj.containsKey(b))return false;boolean removed=adj.get(a).remove(b);if(a!=b)adj.get(b).remove(a);return removed;}
- public Set<Integer> vertices(){return Collections.unmodifiableSet(adj.keySet());}
+    private final Map<Integer, Set<Integer>> adjacencyList = new LinkedHashMap<>();
+
+    public void addVertex(int vertex) {
+        adjacencyList.computeIfAbsent(vertex, ignored -> new LinkedHashSet<>());
+    }
+
+    public void addEdge(int first, int second) {
+        addVertex(first);
+        addVertex(second);
+        adjacencyList.get(first).add(second);
+        adjacencyList.get(second).add(first);
+    }
+
+    public Set<Integer> neighbors(int vertex) {
+        Set<Integer> connectedVertices = adjacencyList.get(vertex);
+        if (connectedVertices == null) {
+            return Set.of();
+        }
+        return Collections.unmodifiableSet(connectedVertices);
+    }
+
+    public List<Integer> bfs(int start) {
+        if (!adjacencyList.containsKey(start)) {
+            return List.of();
+        }
+
+        List<Integer> visitOrder = new ArrayList<>();
+        Set<Integer> visited = new HashSet<>();
+        ArrayDeque<Integer> waiting = new ArrayDeque<>();
+        waiting.add(start);
+        visited.add(start);
+
+        while (!waiting.isEmpty()) {
+            int vertex = waiting.remove();
+            visitOrder.add(vertex);
+            for (int neighbor : adjacencyList.get(vertex)) {
+                if (visited.add(neighbor)) {
+                    waiting.add(neighbor);
+                }
+            }
+        }
+        return visitOrder;
+    }
+
+    public List<Integer> dfs(int start) {
+        List<Integer> visitOrder = new ArrayList<>();
+        Set<Integer> visited = new HashSet<>();
+        visitDepthFirst(start, visited, visitOrder);
+        return visitOrder;
+    }
+
+    public Set<Integer> reachable(int start) {
+        return new LinkedHashSet<>(bfs(start));
+    }
+
+    public boolean removeEdge(int first, int second) {
+        Set<Integer> firstNeighbors = adjacencyList.get(first);
+        Set<Integer> secondNeighbors = adjacencyList.get(second);
+        if (firstNeighbors == null || secondNeighbors == null) {
+            return false;
+        }
+
+        boolean removed = firstNeighbors.remove(second);
+        if (first != second) {
+            secondNeighbors.remove(first);
+        }
+        return removed;
+    }
+
+    public Set<Integer> vertices() {
+        return Collections.unmodifiableSet(adjacencyList.keySet());
+    }
+
+    private void visitDepthFirst(int vertex, Set<Integer> visited, List<Integer> visitOrder) {
+        if (!adjacencyList.containsKey(vertex) || !visited.add(vertex)) {
+            return;
+        }
+
+        visitOrder.add(vertex);
+        for (int neighbor : adjacencyList.get(vertex)) {
+            visitDepthFirst(neighbor, visited, visitOrder);
+        }
+    }
 }
