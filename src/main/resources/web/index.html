@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>BLACKOUT | Data Center Simulator</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main class="page-shell">
+    <header class="site-header">
+      <div class="brand-mark" aria-hidden="true">B</div>
+      <div>
+        <p class="eyebrow">LOCAL SIMULATOR</p>
+        <h1>BLACKOUT</h1>
+        <p class="subtitle">Data Center Failure and Recovery Simulator</p>
+      </div>
+      <span class="local-badge"><span></span> Running locally</span>
+    </header>
+
+    <section class="intro" aria-labelledby="overview-title">
+      <div>
+        <p class="eyebrow">OPERATIONS CONSOLE</p>
+        <h2 id="overview-title">Choose a simulation</h2>
+        <p>Run the Java simulator's existing story scenarios and review the state changes and audit results.</p>
+      </div>
+      <p class="note">Scenarios use the simulator's built-in sample data. Each run starts as an independent demonstration.</p>
+    </section>
+
+    <section class="workspace" aria-label="Scenario runner">
+      <div class="controls-panel">
+        <div class="panel-heading">
+          <h3>Scenario menu</h3>
+          <span id="connection-state" class="connection-state">Connecting…</span>
+        </div>
+        <p class="section-help">Select an option from the existing BLACKOUT menu.</p>
+        <div id="scenario-list" class="scenario-list" aria-live="polite">
+          <p class="muted">Loading simulator options…</p>
+        </div>
+        <div class="input-area">
+          <label for="scenario-input">Scenario inputs</label>
+          <p id="scenario-input">No values are required. The existing scenarios provide their own sample inputs.</p>
+        </div>
+      </div>
+
+      <section class="output-panel" aria-labelledby="output-title">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">SIMULATION OUTPUT</p>
+            <h3 id="output-title">Results</h3>
+          </div>
+          <span id="run-status" class="status-pill idle">READY</span>
+        </div>
+        <div id="output" class="output-content" aria-live="polite" aria-atomic="false">
+          <p class="empty-state">Choose a scenario to see its results here.</p>
+        </div>
+      </section>
+    </section>
+
+    <footer>
+      <span>BLACKOUT · DSA case study</span>
+      <span>Scenario values are deterministic; this dashboard does not model live infrastructure.</span>
+    </footer>
+  </main>
+</body>
+</html>

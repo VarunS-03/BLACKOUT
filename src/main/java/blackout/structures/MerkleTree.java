@@ -64,7 +64,9 @@ public class MerkleTree {
     }
 
     public boolean verify(String record, int index, List<String> proof, String trustedRoot) {
-        if (index < 0 || index >= leafHashes.size()) {
+        if (index < 0 || index >= leafHashes.size()
+                || proof == null || trustedRoot == null
+                || proof.size() != levels.size() - 1) {
             return false;
         }
 
@@ -78,8 +80,14 @@ public class MerkleTree {
             String side = proofPart.substring(0, 2);
             String siblingHash = proofPart.substring(2);
             if (side.equals("L:")) {
+                if (nodeIndex % 2 == 0) {
+                    return false;
+                }
                 currentHash = hash("node:" + siblingHash + currentHash);
             } else if (side.equals("R:")) {
+                if (nodeIndex % 2 != 0) {
+                    return false;
+                }
                 currentHash = hash("node:" + currentHash + siblingHash);
             } else {
                 return false;
