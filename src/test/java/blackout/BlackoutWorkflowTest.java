@@ -30,6 +30,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BlackoutWorkflowTest {
@@ -60,6 +61,30 @@ class BlackoutWorkflowTest {
         assertTrue(analysis.areConnected(10, 20));
         assertFalse(analysis.areConnected(10, 30));
         assertEquals(List.of(10, 20), analysis.affectedServers(10));
+    }
+
+    @Test
+    void reachabilityResultsCannotMutateFreshOrCachedTraversalResults() {
+        FailureAnalysisService analysis = new FailureAnalysisService();
+        for (int id : List.of(1, 2, 3, 4)) analysis.addServer(id);
+        analysis.connectServers(1, 2);
+        analysis.connectServers(1, 3);
+        analysis.connectServers(2, 4);
+        List<Integer> expected = List.of(1, 2, 3, 4);
+
+        List<Integer> fresh = analysis.affectedServers(1);
+        assertEquals(expected, fresh);
+        assertThrows(UnsupportedOperationException.class, () -> fresh.add(5));
+        assertEquals(expected, analysis.affectedServers(1));
+
+        List<Integer> cached = analysis.affectedServers(1);
+        assertThrows(UnsupportedOperationException.class, () -> cached.clear());
+        assertEquals(expected, analysis.affectedServers(1));
+
+        analysis.addServer(5);
+        assertEquals(expected, analysis.affectedServers(1));
+        analysis.connectServers(4, 5);
+        assertEquals(List.of(1, 2, 3, 4, 5), analysis.affectedServers(1));
     }
 
     @Test

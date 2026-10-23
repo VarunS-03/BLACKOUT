@@ -7,7 +7,7 @@
 - **DisjointSetUnion**: path compression plus union by rank.
 
 ## Application behavior
-`Main` registers each server with `FailureAnalysisService.addServer`. The service owns the network graph, adds links with `connectServers`, and reports servers reachable from a selected ID with `affectedServers` (BFS). `areConnected` maps IDs to DSU indices and checks whether both IDs belong to the same connected group.
+`Main` registers each server in `DataCenterManager` and adds its ID as a vertex through `FailureAnalysisService.addServer`; registering a server does not add network links. The service owns the network graph, adds links with `connectServers`, and reports servers reachable from a selected ID with `affectedServers` (BFS). `areConnected` maps IDs to DSU indices and checks whether both IDs belong to the same connected group. The console topology view presents graph links and server availability separately.
 
 ## Complexity
 BFS/DFS: O(V+E). BST search: O(h), average O(log n) for a reasonably shaped tree but O(n) worst case. DSU operations are amortized O(alpha(V)) with path compression and union by rank. Because DSU uses fixed-size arrays, the service rebuilds its sets after adding a server or link; that rebuild is O(V + E alpha(V)).
