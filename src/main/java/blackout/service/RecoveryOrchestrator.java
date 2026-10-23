@@ -34,6 +34,7 @@ public class RecoveryOrchestrator {
 
     /** Marks the requested server offline and schedules its recovery. */
     public List<Integer> simulateFailure(int serverId, int severity, long deadline) {
+        validateRecoveryInputs(severity, deadline);
         Server server = requireServer(serverId);
         if (!server.isOnline()) {
             throw new IllegalStateException("Server is already offline: " + serverId);
@@ -46,6 +47,34 @@ public class RecoveryOrchestrator {
                 taskId, serverId, severity, deadline, "Recover server " + server.getName()));
         auditLogger.log("SERVER_FAILED", "server=" + serverId + ";affected=" + affectedServers);
         return affectedServers;
+    }
+
+    /** Reports an incident into the scheduler deque; severity 1 is treated as urgent. */
+    public RecoveryTask reportIncident(int serverId, int severity, long deadline) {
+        validateRecoveryInputs(severity, deadline);
+        Server server = requireServer(serverId);
+        if (!server.isOnline()) {
+            throw new IllegalStateException("Server is already offline: " + serverId);
+        }
+        RecoveryTask task = new RecoveryTask(nextTaskId++, serverId, severity, deadline,
+                "Recover server " + server.getName());
+        server.setOnline(false);
+        recoveryScheduler.reportIncident(task, severity == 1);
+        auditLogger.log("INCIDENT_REPORTED", "task=" + task.getId() + ";server=" + serverId);
+        return task;
+    }
+
+    /** Dispatches the deque's next incident into the recovery priority queue. */
+    public RecoveryTask dispatchNextIncident() {
+        RecoveryTask task = recoveryScheduler.dispatchNextIncident();
+        if (task != null) {
+            auditLogger.log("INCIDENT_DISPATCHED", "task=" + task.getId() + ";server=" + task.getServerId());
+        }
+        return task;
+    }
+
+    public int pendingIncidents() {
+        return recoveryScheduler.pendingIncidents();
     }
 
     /** Executes the next scheduled task and returns null when there is no work. */
@@ -82,5 +111,14 @@ public class RecoveryOrchestrator {
         Server server = dataCenter.findServer(serverId);
         if (server == null) throw new IllegalArgumentException("Unknown server: " + serverId);
         return server;
+    }
+
+    private void validateRecoveryInputs(int severity, long deadline) {
+        if (severity < 1 || severity > 5) {
+            throw new IllegalArgumentException("Severity must be from 1 to 5.");
+        }
+        if (deadline < 0) {
+            throw new IllegalArgumentException("Deadline must be non-negative.");
+        }
     }
 }

@@ -10,6 +10,49 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RecoveryOrchestratorTest {
     @Test
+    void invalidRecoveryInputsAreRejectedBeforeChangingState() {
+        for (int[] input : new int[][]{{0, 0}, {6, 0}, {1, -1}}) {
+            RecoveryOrchestrator failure = new RecoveryOrchestrator();
+            Server a = new Server(1, "a");
+            failure.registerServer(a);
+            assertThrows(IllegalArgumentException.class,
+                    () -> failure.simulateFailure(1, input[0], input[1]));
+            assertTrue(a.isOnline());
+            assertEquals(0, failure.pendingRecoveries());
+            assertEquals(1, failure.auditRecords().size());
+
+            RecoveryOrchestrator incident = new RecoveryOrchestrator();
+            Server b = new Server(2, "b");
+            incident.registerServer(b);
+            assertThrows(IllegalArgumentException.class,
+                    () -> incident.reportIncident(2, input[0], input[1]));
+            assertTrue(b.isOnline());
+            assertEquals(0, incident.pendingIncidents());
+            assertEquals(0, incident.pendingRecoveries());
+            assertEquals(1, incident.auditRecords().size());
+        }
+    }
+
+    @Test
+    void recoveryInputBoundariesRemainSupportedByBothOperations() {
+        for (int severity : new int[]{1, 5}) {
+            RecoveryOrchestrator failure = new RecoveryOrchestrator();
+            Server a = new Server(1, "a");
+            failure.registerServer(a);
+            failure.simulateFailure(1, severity, 0);
+            assertFalse(a.isOnline());
+            assertEquals(1, failure.pendingRecoveries());
+
+            RecoveryOrchestrator incident = new RecoveryOrchestrator();
+            Server b = new Server(2, "b");
+            incident.registerServer(b);
+            incident.reportIncident(2, severity, 0);
+            assertFalse(b.isOnline());
+            assertEquals(1, incident.pendingIncidents());
+        }
+    }
+
+    @Test
     void failureAnalysisSchedulingRecoveryStateAndAuditStayConsistent() {
         RecoveryOrchestrator simulator = new RecoveryOrchestrator();
         Server database = new Server(10, "database");

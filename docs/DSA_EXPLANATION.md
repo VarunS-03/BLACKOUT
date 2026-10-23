@@ -1,6 +1,6 @@
 # BLACKOUT: DSA and Implementation Guide
 
-This guide describes the code that is actually in the project. The application is intentionally an in-memory, terminal-based case study: it has no database, web server, or external runtime library.
+This guide describes the code that is actually in the project. BLACKOUT is an in-memory case study with an interactive console and an optional browser scenario launcher. It has no database or external runtime dependency; the browser launcher uses the JDK HTTP server.
 
 ## A. Project overview
 
@@ -14,6 +14,10 @@ These activities need different ways to store and retrieve information:
 - Telemetry needs a bounded event buffer and quick range sums.
 - Configuration changes need last-in, first-out undo.
 - Audit records need a compact way to check whether a candidate record matches the current records.
+
+The console starts with deterministic sample data: eight online servers and a connected seven-link network, five routine jobs, three buffered telemetry events, six load samples, one failover plan, and 24 audit records. This is simulated state, not live infrastructure. The dashboard recomputes its counts from the services. The topology view displays graph nodes and links; it distinguishes graph connectivity from server online/offline state.
+
+The console's guided simulations use fresh state, independent of the seeded interactive environment. The critical-outage scenario reports one selected server failed, displays its BFS-reachable context, schedules a single recovery task directly, then processes it. It does not demonstrate competing heap tasks or deque dispatch. The second scenario reports multiple incidents through the deque, dispatches them to the recovery min-heap, and shows the observed orders and recovery states. Both are deterministic demonstrations, not automatic monitoring or real repair work.
 
 `blackout.cli.Main` reads each menu choice and the necessary values. It calls the service class or manager for the operation, which then calls the data structure. The terminal prints the result returned by that operation rather than assuming it succeeded.
 
@@ -470,19 +474,23 @@ mvn -q -DskipTests package
 java -cp target/classes blackout.cli.Main
 ```
 
-The `pom.xml` compiles with Java release 17 and includes JUnit 5 for tests. The application itself has no third-party runtime dependencies.
+The `pom.xml` compiles with Java release 17 and includes JUnit 5 for tests. The application itself has no third-party runtime dependencies. To start the optional browser scenario launcher, build the JAR and run:
 
-### Short faculty demonstration
+```text
+mvn -q -DskipTests package
+java -cp target/blackout-simulator-1.0.0.jar blackout.web.WebMain
+```
 
-1. Choose **1 → 1**. Register ID `10`, name `Database`; repeat for ID `20`, name `Data API`; register ID `30`, name `Cache`.
-2. In **1**, choose **2** and search for `20` (hash table), **3** and search prefix `data` (Trie), **4** to see registration order (linked list), and **5** to see sorted IDs (BST).
-3. Choose **2 → 1** and connect `10` to `20`, then connect `20` to `30`. Use **2 → 2** to check `10` and `30` (DSU); use **2 → 3** from `10` (graph BFS and cached result).
-4. Choose **3**. Report outage for server `20`, severity `1`, deadline `5`, description `restore database connection`. Choose **4** to dispatch it (deque to heap), then **5** to process the recovery (priority queue selects task).
-5. Choose **6 → 1** and submit `rotate logs`; submit `check disk`; choose **6 → 2** twice to show FIFO processing.
-6. Choose **7 → 1** to set `Maintenance`, change it again to `Read-only`, then choose **7 → 2** to undo to `Maintenance` (stack).
-7. Choose **8 → 3** and enter samples `10`, `20`, `30`, `40`; choose **8 → 4** and query indices `1` through `3` (sum `90`); choose **8 → 5**, update index `2` to `5` (segment tree). **8 → 1** and **8 → 2** demonstrate bounded telemetry FIFO.
-8. Choose **9 → 1** and enter primary `10`, backups `20` and `30`; **9 → 2** displays the binary-tree preorder.
-9. Choose **10 → 1** to inspect audit records and the Merkle root. Choose **10 → 2**, select record `1`, press Enter twice to verify it, then repeat and change its details to see a failed verification.
-10. Enter `0` at the main menu to exit.
+Open the local URL printed by `WebMain` (default `http://127.0.0.1:8765`). The browser launches predefined scenarios with fresh state; it does not display or change the interactive console's seeded environment.
 
-At any submenu, choose `0` to return to the main menu.
+### Seeded console demonstration
+
+1. Start the console and inspect its dashboard: the seeded values are simulated sample state. Choose **1 → 2** to view servers in registration order; **3 → 1** searches by ID and **3 → 2** searches names by prefix.
+2. Choose **2 → 4** for the graph topology. The view shows nodes and undirected links; online/offline status is separate from graph connectivity. Choose **2 → 3**, enter `104`, and observe BFS reachability order. Reachability is network context, not proof that all listed servers failed.
+3. Choose **4**, enter server `104`, severity `1`, deadline `20`, and a short description. Only server 104 is marked offline; the report shows BFS context and places severity 1 at the deque front.
+4. Choose **5** to dispatch the deque front into the recovery min-heap. Choose **6** to process a task; with this one task, it is selected and server 104 returns online. With multiple dispatched tasks, the heap compares severity, deadline, then task ID.
+5. Choose **9 → 1** to inspect audit entries. The seeded log has 24 records; reporting, dispatching, and recovery add records. Choose **9 → 2**, enter the latest record number (27 after this sequence), and press Enter at both candidate prompts to verify the unchanged record against the current in-memory Merkle root. Editing candidate text demonstrates a mismatch; no external trusted anchor is stored.
+6. Choose **12 → 2** for the separate incident deque and recovery heap demonstration. It reports multiple incidents, shows deque dispatch order and heap processing order, and reports the resulting server states. It uses isolated state and does not alter the console's dashboard or audit log.
+7. Choose **0** at the main menu to exit. In any submenu, **0** returns to the main menu.
+
+For routine-job FIFO behavior, choose **7 → 1** to submit jobs and **7 → 2** to process the oldest. Configuration undo is **10 → 1** to change and **10 → 2** to undo. Telemetry and segment-tree operations are under **8**. **11** stores and displays a failover plan as a primary with backups; it does not switch servers automatically.

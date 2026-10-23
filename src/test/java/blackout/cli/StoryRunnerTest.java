@@ -2,8 +2,10 @@ package blackout.cli;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,6 +38,28 @@ class StoryRunnerTest {
     }
 
     @Test
+    void multipleIncidentScenarioReportsDequeAndHeapOrdersFromActualProcessing() {
+        ByteArrayOutputStream captured = new ByteArrayOutputStream();
+        StoryRunner runner = new StoryRunner(new PrintStream(captured, true, StandardCharsets.UTF_8));
+
+        StoryRunner.ScenarioResult result = runner.runMultipleIncidents();
+        String output = captured.toString(StandardCharsets.UTF_8);
+
+        assertTrue(result.passed());
+        assertEquals(List.of("Customer database", "Authentication service", "Analytics platform",
+                "Banking API"), result.recoveryOrder());
+        assertTrue(output.contains("Task 2 | Customer database | severity 1 | deadline 900 | deque FRONT"));
+        assertTrue(output.contains("Task 1 | Banking API | severity 2 | deadline 500 | deque BACK"));
+        assertTrue(output.contains("Observed deque dispatch order: Customer database -> Banking API -> Authentication service -> Analytics platform"));
+        assertTrue(output.contains("Observed heap processing order: Customer database -> Authentication service -> Analytics platform -> Banking API"));
+        assertTrue(output.indexOf("Processed heap-selected task 3 for Authentication service")
+                < output.indexOf("Processed heap-selected task 4 for Analytics platform"),
+                "Equal severity and deadline tasks should be processed in task-ID order.");
+        assertEquals(4, occurrences(output, "recovery SUCCEEDED (ONLINE)"));
+        assertTrue(output.contains("Final report: PASS"));
+    }
+
+    @Test
     void edgeScenariosCoverIsolationInvalidDuplicateAndEmptyQueue() {
         List<StoryRunner.ScenarioResult> results = quietRunner().runEdgeCases();
 
@@ -60,5 +84,15 @@ class StoryRunnerTest {
 
     private StoryRunner quietRunner() {
         return new StoryRunner(new PrintStream(OutputStream.nullOutputStream()));
+    }
+
+    private int occurrences(String text, String value) {
+        int count = 0;
+        int index = 0;
+        while ((index = text.indexOf(value, index)) >= 0) {
+            count++;
+            index += value.length();
+        }
+        return count;
     }
 }

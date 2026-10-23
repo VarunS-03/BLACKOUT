@@ -130,50 +130,81 @@ public class StoryRunner {
     }
 
     public ScenarioResult runMultipleIncidents() {
-        begin("Scenario C - Multiple incidents and scheduler ordering");
+        begin("Scenario C - Incident deque and recovery heap");
         Center center = createCenter(211);
-        printServers(center.servers());
-        printConnections(center);
-        output.println("Four independent failure requests are entered. Connected servers are impact context only.");
-
+        output.println("Four deterministic incidents are reported into fresh scenario state.");
         int[] severities = {2, 1, 2, 2};
         long[] deadlines = {500, 900, 300, 300};
+        output.println("\n1. Incident creation and deque insertion");
         for (int i = 0; i < center.servers().size(); i++) {
             Server server = center.servers().get(i).server();
-            List<Integer> impactedIds = center.simulator().simulateFailure(
+            RecoveryTask task = center.simulator().reportIncident(
                     server.getId(), severities[i], deadlines[i]);
-            output.println("Scheduled " + server.getName() + ": severity " + severities[i]
-                    + ", deadline value " + deadlines[i] + ". Reachable impact context: "
-                    + String.join(", ", namesForIds(center.servers(), impactedIds)) + ".");
+            String position = severities[i] == 1 ? "FRONT" : "BACK";
+            output.println("[OK] Task " + task.getId() + " | " + server.getName()
+                    + " | severity " + task.getSeverity() + " | deadline " + task.getDeadline()
+                    + " | deque " + position);
         }
+        output.println("DSA: severity-1 incidents enter the deque front; standard incidents enter its back.");
         boolean allRequestedServersOffline = true;
         for (ServerProfile profile : center.servers()) {
             if (profile.server().isOnline()) allRequestedServersOffline = false;
         }
 
-        output.println("\nThe scheduler chooses lower severity numbers first. For equal severity it chooses the lower deadline value, then the lower task ID.");
+        output.println("\n2. Incident deque dispatch");
+        List<String> dispatchOrder = new ArrayList<>();
+        while (center.simulator().pendingIncidents() > 0) {
+            RecoveryTask task = center.simulator().dispatchNextIncident();
+            Server server = center.simulator().findServer(task.getServerId());
+            dispatchOrder.add(server.getName());
+            output.println("[OK] Dispatched task " + task.getId() + " for " + server.getName()
+                    + " | incidents waiting " + center.simulator().pendingIncidents()
+                    + " | heap tasks " + center.simulator().pendingRecoveries());
+        }
+        output.println("Observed deque dispatch order: " + String.join(" -> ", dispatchOrder));
+        output.println("DSA: dispatch removes the deque front and inserts that task into the recovery heap.");
+
+        output.println("\n3. Recovery min-heap processing");
+        output.println("DSA: the min-heap selects lower severity, then earlier deadline, then lower task ID.");
         List<String> recoveryOrder = new ArrayList<>();
+        boolean allRecoveriesSucceeded = true;
         while (center.simulator().pendingRecoveries() > 0) {
             RecoveryTask task = center.simulator().processNextRecovery();
+            if (task == null) {
+                allRecoveriesSucceeded = false;
+                break;
+            }
             ServerProfile profile = profileForId(center.servers(), task.getServerId());
             recoveryOrder.add(profile.server().getName());
-            output.println("Processed task " + task.getId() + " for " + profile.server().getName()
-                    + " (severity " + task.getSeverity() + ", deadline " + task.getDeadline() + ").");
+            boolean recovered = profile.server().isOnline();
+            allRecoveriesSucceeded &= recovered;
+            output.println("[OK] Processed heap-selected task " + task.getId() + " for " + profile.server().getName()
+                    + " | severity " + task.getSeverity() + " | deadline " + task.getDeadline()
+                    + " | recovery " + (recovered ? "SUCCEEDED (ONLINE)" : "FAILED"));
         }
+        output.println("Observed heap processing order: " + String.join(" -> ", recoveryOrder));
+
         List<String> expectedOrder = List.of("Customer database", "Authentication service",
                 "Analytics platform", "Banking API");
+        List<String> expectedDispatchOrder = List.of("Customer database", "Banking API",
+                "Authentication service", "Analytics platform");
         boolean taskOrderValid = recoveryOrder.equals(expectedOrder);
+        boolean dispatchOrderValid = dispatchOrder.equals(expectedDispatchOrder);
         boolean restored = allOnline(center.servers());
-        output.println("All four requested targets were offline before processing: "
+        output.println("\n4. Final summary");
+        output.println("All four requested targets were offline before dispatch: "
                 + yesNo(allRequestedServersOffline) + ".");
-        output.println("\nScheduler order matches the documented comparison rules: " + yesNo(taskOrderValid) + ".");
+        output.println("Deque order matches front/back insertion rules: " + yesNo(dispatchOrderValid) + ".");
+        output.println("Heap order matches severity/deadline/task-ID rules: " + yesNo(taskOrderValid) + ".");
+        output.println("All processed recoveries succeeded: " + yesNo(allRecoveriesSucceeded) + ".");
         output.println("All four explicitly failed servers returned online: " + yesNo(restored) + ".");
         IntegrityResult integrity = verifyAudit(center.simulator());
         printIntegrity(integrity);
 
         ScenarioResult result = resultForCenter("multiple incidents",
-                allRequestedServersOffline && taskOrderValid && restored && integrity.cleanRecordAccepted()
-                        && integrity.alteredRecordRejected(), center, List.of(), recoveryOrder);
+                allRequestedServersOffline && dispatchOrderValid && taskOrderValid && allRecoveriesSucceeded
+                        && restored && integrity.cleanRecordAccepted() && integrity.alteredRecordRejected(),
+                center, List.of(), recoveryOrder);
         report(result);
         return result;
     }

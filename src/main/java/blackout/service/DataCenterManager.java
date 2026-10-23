@@ -80,6 +80,10 @@ public class DataCenterManager {
         return configuration;
     }
 
+    public boolean hasConfigurationHistory() {
+        return !configurationHistory.isEmpty();
+    }
+
     public void changeConfiguration(String newConfiguration) {
         configurationHistory.push(configuration);
         configuration = newConfiguration;

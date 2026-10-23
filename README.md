@@ -1,19 +1,20 @@
 # BLACKOUT
 
-BLACKOUT is a terminal-based Java case study that simulates data-center outages and recovery. Users register servers, connect them, report failures, dispatch incidents, process recovery work, and inspect telemetry and audit records.
+BLACKOUT is a Java 17 Data Structures and Algorithms case study that simulates data-center failure analysis and recovery. Its deterministic sample environment is for demonstration and does not represent live infrastructure.
 
-## Scenario and DSA structures
+## Features
 
-The project uses sixteen structures in real scenario operations: custom linked list, hash table, queue, stack, graph, binary tree, binary search tree, disjoint-set union, binary heap, priority queue, circular queue, deque, segment tree, LRU cache, Trie, and Merkle tree. The menu explains the structure used for relevant actions.
+- Register servers and search inventory by ID, name prefix, registration order, or sorted ID.
+- Model undirected network links with an adjacency-list graph; use BFS for reachability and DSU for connectivity checks.
+- Report incidents through a deque and dispatch recovery tasks through a min-heap priority queue.
+- Process routine jobs FIFO, undo configuration changes with a stack, buffer telemetry in a circular queue, and query/update load samples with a segment tree.
+- Store and display a primary-plus-backups failover plan; the plan does not automatically switch servers.
+- Inspect audit records and verify candidates against a Merkle root rebuilt from the current in-memory log.
+- View the network topology and run two isolated guided simulations from the console.
 
-## Prerequisites
+## Requirements and console
 
-- JDK 17 or newer
-- Apache Maven
-
-## Build and run
-
-From the `BLACKOUT` project directory:
+Requires JDK 17 or newer and Apache Maven. From the project root:
 
 ```text
 mvn test
@@ -21,8 +22,17 @@ mvn -q -DskipTests package
 java -cp target/classes blackout.cli.Main
 ```
 
-Use the numbered terminal menus to enter server IDs, names, connections, outage severity, recovery deadlines, jobs, configuration names, telemetry, load samples, and audit verification candidates. Enter `0` in a submenu to return, or `0` at the main menu to exit.
+The console starts with sample data. Its dashboard is simulated state, not live monitoring. Use the numbered menus; `0` returns from a submenu or exits from the main menu.
 
-## Detailed guide
+## Optional browser scenario launcher
 
-See [docs/DSA_EXPLANATION.md](docs/DSA_EXPLANATION.md) for the scenario-to-structure mapping, implementation walkthroughs, examples, complexity analysis, execution flow, and a reproducible demonstration.
+Build the JAR and start the JDK HTTP server:
+
+```text
+mvn -q -DskipTests package
+java -cp target/blackout-simulator-1.0.0.jar blackout.web.WebMain
+```
+
+Open the local URL printed by the process (default `http://127.0.0.1:8765`). This browser interface launches predefined scenarios using separate state; it does not show the console's current seeded state or live infrastructure.
+
+See [docs/DSA_EXPLANATION.md](docs/DSA_EXPLANATION.md) for implementation details, complexity, and demonstrations.
