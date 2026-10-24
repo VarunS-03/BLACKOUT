@@ -12,6 +12,8 @@ BLACKOUT is a Java 17 Data Structures and Algorithms case study that simulates d
 - Inspect audit records and verify candidates against a Merkle root rebuilt from the current in-memory log.
 - View the network topology and run two isolated guided simulations from the console.
 
+- 
+[![Architecture diagram of varuns-03/blackout](https://gitdiagram.com/varuns-03/blackout/diagram.png)](https://gitdiagram.com/varuns-03/blackout?utm_source=readme&utm_medium=picture)
 ## Requirements and console
 
 Requires JDK 17 or newer and Apache Maven. From the project root:
